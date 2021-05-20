@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -48,6 +49,19 @@ class BeerServiceTest {
 		assertThat(createBeerDTO.getName(), is(equalTo(expectedBeerDTO.getName())));
 		assertThat(createBeerDTO.getQuantity(), is(equalTo(expectedBeerDTO.getQuantity())));
 		assertThat(createBeerDTO.getQuantity(), is(greaterThan(2)));
+	}
+	
+	@Test
+	void whenAlreadyRegisteredBeerInformedThenAnExceptionShouldBeThrow() throws BeerAlreadyRegisteredException {
+		//given
+		BeerDTO expectedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+		Beer duplicatedBeer = beerMapper.toModel(expectedBeerDTO);
+		
+		//when
+		when(beerRepository.findByName(expectedBeerDTO.getName())).thenReturn(Optional.of(duplicatedBeer));		
+		
+		//then
+		Assertions.assertThrows(BeerAlreadyRegisteredException.class, () -> beerService.createBeer(expectedBeerDTO));
 	}
 
 }
