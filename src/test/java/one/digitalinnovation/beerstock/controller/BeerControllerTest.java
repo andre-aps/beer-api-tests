@@ -66,4 +66,17 @@ public class BeerControllerTest {
 			.andExpect(jsonPath("$.type", is(beerDTO.getType().name())));
 	}
 	
+	@Test
+	void whenPostIsCalledWithoutRequiredFieldThenAnErrorIsReturn() throws Exception {
+		// given
+		BeerDTO beerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+		beerDTO.setBrand(null);
+
+		// then
+		mockMvc.perform(post(BEER_API_URL_PATH)
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(JsonUtils.asJsonString(beerDTO)))
+			.andExpect(status().isBadRequest());
+	}
+	
 }
