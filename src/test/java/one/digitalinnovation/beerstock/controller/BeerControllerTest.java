@@ -134,4 +134,18 @@ public class BeerControllerTest {
 				.andExpect(jsonPath("$[0].type", is(beerDTO.getType().name())));
 	}
 	
+	@Test
+	void whenGetListWithoutBeersIsCalledThenOkStatusIsReturned() throws Exception {
+		//given
+		BeerDTO beerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+		
+		//when
+		when(beerService.listAll()).thenReturn(Collections.singletonList(beerDTO));
+		
+		//then
+		mockMvc.perform(get(BEER_API_URL_PATH)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+	
 }
