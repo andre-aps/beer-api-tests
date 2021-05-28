@@ -32,6 +32,8 @@ import one.digitalinnovation.beerstock.repository.BeerRepository;
 @ExtendWith(MockitoExtension.class)
 class BeerServiceTest {
 
+	private static final Long INVALID_ID = 1L;
+	
 	@Mock
 	private BeerRepository beerRepository;
 	
@@ -140,6 +142,15 @@ class BeerServiceTest {
 		
 		verify(beerRepository, times(1)).findById(expectedDeletedBeerDTO.getId());
 		verify(beerRepository, times(1)).deleteById(expectedDeletedBeerDTO.getId());
+	}
+	
+	@Test
+	void whenExclusionIsCalledWithInValidIdThenThrowAnException() throws BeerNotFoundException {
+		//when
+		when(beerRepository.findById(INVALID_ID)).thenReturn(Optional.empty());
+		
+		//then
+		assertThrows(BeerNotFoundException.class, () -> beerService.deleteById(INVALID_ID));
 	}
 	
 }
