@@ -6,6 +6,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -26,6 +27,7 @@ import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import one.digitalinnovation.beerstock.builder.BeerDTOBuilder;
 import one.digitalinnovation.beerstock.dto.BeerDTO;
+import one.digitalinnovation.beerstock.dto.QuantityDTO;
 import one.digitalinnovation.beerstock.exception.BeerNotFoundException;
 import one.digitalinnovation.beerstock.service.BeerService;
 import one.digitalinnovation.beerstock.util.JsonUtils;
@@ -171,6 +173,30 @@ public class BeerControllerTest {
 		mockMvc.perform(delete((BEER_API_URL_PATH + "/" + INVALID_BEER_ID))
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	void whenPatchIsCalledToIncrementThenOkStatusIsReturn() throws Exception {
+		//given
+		QuantityDTO quantityDTO = QuantityDTO.builder()
+			.quantity(10)
+			.build();
+		
+		BeerDTO beerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+		beerDTO.setQuantity(beerDTO.getQuantity() + quantityDTO.getQuantity());
+		
+		//when
+		when(beerService.increment(VALID_BEER_ID, quantityDTO.getQuantity())).thenReturn(beerDTO);
+		
+		//then
+		mockMvc.perform(patch(BEER_API_URL_PATH + "/" + VALID_BEER_ID + "/" + BEER_API_SUBPATH_INCREMENT_URL)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(JsonUtils.asJsonString(quantityDTO)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.name", is(beerDTO.getName())))
+				.andExpect(jsonPath("$.brand", is(beerDTO.getBrand())))
+				.andExpect(jsonPath("$.type", is(beerDTO.getType().name())))
+				.andExpect(jsonPath("$.quantity", is(beerDTO.getQuantity())));
 	}
 	
 }
