@@ -3,6 +3,7 @@ package one.digitalinnovation.beerstock.service;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
@@ -28,6 +29,7 @@ import one.digitalinnovation.beerstock.entity.Beer;
 import one.digitalinnovation.beerstock.exception.BeerAlreadyRegisteredException;
 import one.digitalinnovation.beerstock.exception.BeerNotFoundException;
 import one.digitalinnovation.beerstock.exception.BeerStockExceededException;
+import one.digitalinnovation.beerstock.exception.BeerStockLessThanZeroException;
 import one.digitalinnovation.beerstock.mapper.BeerMapper;
 import one.digitalinnovation.beerstock.repository.BeerRepository;
 
@@ -189,6 +191,26 @@ class BeerServiceTest {
 		//then
 		assertThrows(BeerStockExceededException.class, 
 				() -> beerService.increment(expectedBeerDTO.getId(), quantityToIncrement));
+	}
+	
+	@Test
+	void whenDecrementIsCalledThenDecrementBeerStock() throws BeerNotFoundException, BeerStockLessThanZeroException {
+		//given
+		BeerDTO expectedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+		Beer expectedBeer = beerMapper.toModel(expectedBeerDTO);
+		
+		//when
+		when(beerRepository.findById(expectedBeerDTO.getId())).thenReturn(Optional.of(expectedBeer));
+		when(beerRepository.save(expectedBeer)).thenReturn(expectedBeer);
+		
+		int quantityToDecrement = 10;
+		int expectedQuantityAfterDecrement = expectedBeerDTO.getQuantity() - quantityToDecrement;
+		
+		//then
+		BeerDTO decrementedBeerDTO = beerService.decrement(expectedBeerDTO.getId(), quantityToDecrement);
+		
+		assertThat(decrementedBeerDTO.getQuantity(), is(equalTo(expectedQuantityAfterDecrement)));
+		assertThat(expectedQuantityAfterDecrement, is(greaterThanOrEqualTo((0))));
 	}
 
 }
