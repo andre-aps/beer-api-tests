@@ -212,5 +212,20 @@ class BeerServiceTest {
 		assertThat(decrementedBeerDTO.getQuantity(), is(equalTo(expectedQuantityAfterDecrement)));
 		assertThat(expectedQuantityAfterDecrement, is(greaterThanOrEqualTo((0))));
 	}
+	
+	@Test
+	void whenBeerStockQuantityIsLessThanZeroThenThrowException() throws BeerNotFoundException, BeerStockLessThanZeroException {
+		//given
+		BeerDTO expectedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+		Beer expectedBeer = beerMapper.toModel(expectedBeerDTO);
+		
+		//when
+		when(beerRepository.findById(expectedBeerDTO.getId())).thenReturn(Optional.of(expectedBeer));
+		
+		int quantityToDecrement = 11;
+		
+		//then
+		assertThrows(BeerStockLessThanZeroException.class, () -> beerService.decrement(expectedBeerDTO.getId(), quantityToDecrement));
+	}
 
 }
